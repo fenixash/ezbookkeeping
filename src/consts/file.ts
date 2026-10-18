@@ -334,6 +334,11 @@ export const SUPPORTED_IMPORT_FILE_CATEGORY_AND_TYPES: ImportFileCategoryAndType
                     supportMultiLanguages: 'zh-Hans',
                     anchor: '如何获取京东金融账单文件'
                 }
+            },
+            {
+                type: 'hdfc_bank_statement_txt',
+                name: 'HDFC Bank Statement File',
+                extensions: '.txt'
             }
         ]
     },
