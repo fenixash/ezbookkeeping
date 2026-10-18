@@ -1,0 +1,39 @@
+# ezBookkeeping deployment for a home server (SQLite database, data stored on the host).
+#
+# Setup:
+#   1. sudo mkdir -p /var/lib/ezbookkeeping/{data,storage,log}
+#   2. sudo chown -R 1000:1000 /var/lib/ezbookkeeping        # the container runs as UID/GID 1000
+#   3. create a ".env" file next to this file (it is git-ignored), for example:
+#        EBK_SERVER_DOMAIN=192.168.1.100
+#        EBK_SECURITY_SECRET_KEY=<output of: openssl rand -base64 32>
+#   4. docker compose up -d --build
+#
+# All configuration options can also be overridden with EBK_<SECTION>_<OPTION> environment variables.
+# See https://ezbookkeeping.mayswind.net/configuration/ for the complete list.
+services:
+  ezbookkeeping:
+    build: .
+    image: ezbookkeeping:hdfc
+    container_name: ezbookkeeping
+    hostname: ezbookkeeping
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # The address you use to access this instance (IP address or host name, without protocol or port)
+      - "EBK_SERVER_DOMAIN=${EBK_SERVER_DOMAIN:?please set EBK_SERVER_DOMAIN in .env}"
+      # Must be set before the first run, changing it later invalidates existing logins and encrypted data
+      - "EBK_SECURITY_SECRET_KEY=${EBK_SECURITY_SECRET_KEY:?please set EBK_SECURITY_SECRET_KEY in .env}"
+      # Compress responses
+      - "EBK_SERVER_ENABLE_GZIP=true"
+      # Write logs to the container output (docker logs) instead of a log file
+      - "EBK_LOG_MODE=console"
+      # Time zone used for log timestamps and scheduled tasks
+      - "TZ=${TZ:-Asia/Kolkata}"
+    volumes:
+      # SQLite database file
+      - "/var/lib/ezbookkeeping/data:/ezbookkeeping/data"
+      # Uploaded transaction pictures and user avatars
+      - "/var/lib/ezbookkeeping/storage:/ezbookkeeping/storage"
+      # Log files (only used when "EBK_LOG_MODE" contains "file")
+      - "/var/lib/ezbookkeeping/log:/ezbookkeeping/log"
